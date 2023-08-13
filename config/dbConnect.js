@@ -1,11 +1,13 @@
-const mongoose = require("mongoose");
-const dbConnect = async () => {
+const mongoose = require('mongoose');
+
+async function dbConnect() {
   try {
-    // mongoose.set("strictQuery", false);
-    await mongoose.connect(process.env.MONGO_URL);
-    console.log("Connected to MongoDB");
+    mongoose.set('strictQuery', true);
+    mongoose.connect(process.env.MONGO_URL);
+    console.log('Connected to MongoDB');
   } catch (error) {
-    console.log(error);
+    console.error('Error connecting to MongoDB:', error);
   }
-};
-dbConnect();
+}
+
+module.exports = dbConnect;

@@ -1,7 +1,8 @@
-const appErr = (message, statusCode) => {
+const appError = (message, statusCode) => {
   let error = new Error(message);
   error.statusCode = statusCode;
+  
   return error;
 };
 
-module.exports = { appErr };
+module.exports = appError;

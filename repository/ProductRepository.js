@@ -1,16 +1,16 @@
-const Product = require("../model/Product");
-const { appErr } = require("../utils/appErr");
+const Product = require('../model/Product');
+const {appErr} = require('../utils/appError');
 
-const getItemByUrl = async (url) => {
+const getItemByUrl = async url => {
   try {
-    const product = await Product.findOne({ url });
+    const product = await Product.findOne({url});
     if (product) {
       return product;
     } else {
       return false;
     }
   } catch (error) {
-    throw (appErr(err.message, 500));
+    throw appErr(err.message, 500);
   }
 };
 
@@ -19,4 +19,4 @@ const getAllItemsByUrl = async () => {
   return products;
 };
 
-module.exports = { getItemByUrl, getAllItemsByUrl };
+module.exports = {getItemByUrl, getAllItemsByUrl};

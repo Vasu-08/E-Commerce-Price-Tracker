@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema(
   {
@@ -6,13 +6,13 @@ const productSchema = new mongoose.Schema(
     name: String,
     url: String,
     prices: [],
-    usersTracking: [],
+    usersTracking: []
   },
-  { 
+  {
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: {virtuals: true}
   }
 );
 
-const Product = mongoose.model("Product", productSchema);
+const Product = mongoose.model('Product', productSchema);
 module.exports = Product;

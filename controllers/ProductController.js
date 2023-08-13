@@ -1,14 +1,14 @@
-const { trackAndSendReply } = require("../service/ProductService");
-const { appErr } = require("../utils/appErr");
-const getMessage = async (req) => {
-  console.log(req.body);
-  const { From, To, Body } = req.body;
-  console.log(From, To, Body);
+const {trackAndSendReply} = require('../service/ProductService');
+const appError = require('../utils/appError');
+
+async function getMessage(req, res, next) {
+  const {From, To, Body} = req.body;
   try {
     await trackAndSendReply(From, To, Body);
+    res.status(200).json({message: 'success'});
   } catch (error) {
-    throw appErr(error.message, 500);
+    next(appError(error.message, 500));
   }
-};
+}
 
-module.exports = { getMessage };
+module.exports = getMessage;
