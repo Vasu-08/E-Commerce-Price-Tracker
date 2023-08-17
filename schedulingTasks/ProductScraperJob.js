@@ -1,3 +1,4 @@
+const axios = require('axios');
 const cheerio = require('cheerio');
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -6,46 +7,57 @@ const cron = require('node-cron');
 const {getAllItemsByUrl} = require('../repository/ProductRepository');
 
 const scrapeProduct = async product => {
-  const response = await fetch(product.url);
-  const body = await response.text();
-  const $ = cheerio.load(body);
-  const priceSpan = $('.a-price-whole');
-  const currentProductPrice = parseInt(priceSpan.text().replace(',', ''));
+  try {
+    const response = await axios.get(product.url);
+    const $ = cheerio.load(response.data);
+    const priceSpan = $('.a-price-whole').first();
+    const currentProductPrice = parseInt(priceSpan.text().replace(/,/g, ''), 10);
 
-  if (product.prices.length == 365) {
-    product.prices.remove(0);
-  }
-
-  let flag = false;
-  let arr = product.prices;
-
-  for (let i = 0; i < arr.length; i++) {
-    if (arr[i] <= currentProductPrice) {
-      flag = true;
-      break;
+    if (product.prices.length === 365) {
+      product.prices.shift();
     }
-  }
 
-  product.prices.push(currentProductPrice);
-  product.save();
-
-  if (!flag) {
-    for (let i = 0; i < product.usersTracking.length; i++) {
-      await client.messages.create({
-        body: `Price of ${product.name} has dropped to ${currentProductPrice}`,
-        from: product.usersTracking[i],
-        to: process.env.TWILIO_PHONE_NUMBER
-      });
+    let flag = false;
+    for (const price of product.prices) {
+      if (price <= currentProductPrice) {
+        flag = true;
+        break;
+      }
     }
+
+    product.prices.push(currentProductPrice);
+    await product.save();
+
+    if (!flag) {
+      for (const user of product.usersTracking) {
+        try {
+          await client.messages.create({
+            body: `Price of ${product.name} has dropped to ${currentProductPrice}`,
+            from: process.env.TWILIO_PHONE_NUMBER,
+            to: user.replace('whatsapp:', '')
+          });
+        } catch (error) {
+          console.error('Twilio message sending error:', error);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Scraping error:', error);
   }
 };
 
-const job = cron.schedule('0 0 * * *', async () => {
-  const products = await getAllItemsByUrl();
+const job = cron.schedule('*/20 * * * * *', async () => {
+  try {
+    const products = await getAllItemsByUrl();
 
-  products.forEach(async product => {
-    await scrapeProduct(product);
-  });
+    await Promise.all(
+      products.map(async product => {
+        await scrapeProduct(product);
+      })
+    );
+  } catch (error) {
+    console.error('Cron job error:', error);
+  }
 });
 
 module.exports = job;

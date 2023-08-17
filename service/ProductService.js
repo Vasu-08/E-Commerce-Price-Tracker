@@ -1,3 +1,4 @@
+const axios = require('axios');
 const cheerio = require('cheerio');
 const {getItemByUrl} = require('../repository/ProductRepository');
 const Product = require('../model/Product');
@@ -19,11 +20,10 @@ const TrackProduct = async (url, from, next) => {
         return `You are already tracking this product. You will be notified when the price of this product drops.`;
       }
     } else {
-      const response = await fetch(url);
-      const body = await response.text();
-      const $ = cheerio.load(body);
-      const priceSpan = $('.a-price-whole');
-      const productPrice = parseInt(priceSpan.text().replace(',', ''));
+      const response = await axios.get(url);
+      const $ = cheerio.load(response.data);
+      const priceSpan = $('.a-price-whole').first();
+      const productPrice = parseInt(priceSpan.text().replace(/,/g, ''), 10);
       const productTitleElem = $('#productTitle');
 
       if (!productTitleElem) {
