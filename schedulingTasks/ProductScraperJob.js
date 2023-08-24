@@ -33,8 +33,8 @@ const scrapeProduct = async product => {
         try {
           await client.messages.create({
             body: `Price of ${product.name} has dropped to ${currentProductPrice}`,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: user.replace('whatsapp:', '')
+            from: `whatsapp:${process.env.TWILIO_PHONE_NUMBER}`,
+            to: user
           });
         } catch (error) {
           console.error('Twilio message sending error:', error);
