@@ -4,7 +4,7 @@ dotenv.config();
 
 const express = require('express');
 const cors = require('cors');
-const dbConnect = require('./config/dbConnect');
+require('./config/dbConnect');
 const productRoute = require('./routes/productRoute');
 const errorHandler = require('./middlewares/errorHandler');
 const ProductScraperJob = require('./schedulingTasks/ProductScraperJob');
@@ -15,8 +15,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
-// Connect to the database
-dbConnect();
 
 // Schedule product scraping job
 ProductScraperJob.start();
